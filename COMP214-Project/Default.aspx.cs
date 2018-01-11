@@ -37,7 +37,7 @@ namespace COMP214_Project
             comm.CommandText = "common_book_info";
             comm.CommandType = CommandType.StoredProcedure;
             OracleParameter param1 = comm.Parameters.Add("p_search", OracleDbType.NVarchar2, ParameterDirection.Input);
-            param1.Value = TextBox1.Text;
+            param1.Value = TextBox1.Text.ToLower();
             OracleParameter param = comm.Parameters.Add("ref_cur", OracleDbType.RefCursor, ParameterDirection.Output);
             DataTable table;
 
