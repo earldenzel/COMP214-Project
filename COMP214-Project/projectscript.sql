@@ -90,6 +90,8 @@ INSERT INTO project_author
 	VALUES (4, 'J.R.R. Tolkien');
 INSERT INTO project_author
 	VALUES (5, 'Bill Nye');
+INSERT INTO project_author
+  VALUES (6, 'Andy Weir');
 
 CREATE TABLE project_friend (
 	friendID	NUMBER(5),
@@ -105,6 +107,8 @@ INSERT INTO project_friend
 	VALUES (1, 'TJ', 1);
 INSERT INTO project_friend
 	VALUES (2, 'Mr. Friendo', 1);
+INSERT INTO project_friend
+	VALUES (3, 'Pauline', 1);
     
 CREATE TABLE project_books (
   bookID  NUMBER(6),
@@ -133,6 +137,16 @@ INSERT INTO project_books
 	VALUES (4,'9781850894148', 'The Lord of the Rings: The Fellowship of the Ring', 423, 2, NULL, 5, 2, 'great read');
 INSERT INTO project_books
 	VALUES (5,'9781427252104', 'Undeniable: Evolution and the Science of Creation', 423, 1, 2, 4, 3, 'great read');
+INSERT INTO project_books
+	VALUES (6,'9781427252104', 'Bill Bill Bill Bill Bill Save The World!', 423, 1, 3, 4, 2, 'great read');
+INSERT INTO project_books
+	VALUES (7,'9780091956141', 'The Martian', 369, 3, NULL, 6, 1, 'great read');
+INSERT INTO project_books
+	VALUES (8,'i wish i knew', 'The Egg', 423, 3, 1, 6, 1, 'great read');
+INSERT INTO project_books
+	VALUES (9,'unknown', 'Some book by Carl Sagan', 23, 2, NULL, 1, 1, 'great read');
+INSERT INTO project_books
+	VALUES (10,'unknown', 'Some textbook for Chemistry', 1000, 2, NULL, 4, 2, 'great read');
 
 CREATE TABLE project_logs(
   logID NUMBER(6),
