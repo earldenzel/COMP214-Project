@@ -4,7 +4,6 @@ drop sequence address_seq;
 drop sequence books_seq;
 drop sequence genre_seq;
 drop sequence friend_seq;
-
 create sequence user_seq start with 100 increment by 1;
 create sequence author_seq start with 200 increment by 1;
 create sequence address_seq start with 300 increment by 1;
@@ -12,7 +11,6 @@ create sequence books_seq start with 400 increment by 1;
 create sequence genre_seq start with 500 increment by 1;
 create sequence friend_seq start with 600 increment by 1;
 
-DROP PROCEDURE common_book_info;
 DROP TABLE project_books;
 DROP TABLE project_genre;
 DROP TABLE project_friend;
@@ -124,24 +122,92 @@ INSERT INTO project_books
 INSERT INTO project_books
 	VALUES (4,'9781850894148', 'The Lord of the Rings: The Fellowship of the Ring', 423, 1, 2, 4, 3, 'great read');
 
+CREATE OR REPLACE FUNCTION friendformat
+(p_friendid IN NUMBER)
+RETURN NVARCHAR2
+IS
+  lv_friend NVARCHAR2(20);
+BEGIN
+  IF p_friendid IS NULL
+    THEN RETURN 'no one! (available)';
+  ELSE
+    BEGIN
+    SELECT friendname INTO lv_friend
+    FROM project_friend
+    WHERE friendid = p_friendid;
+    RETURN lv_friend;
+    END;
+  END IF;
+END;
+
+CREATE OR REPLACE FUNCTION authorformat
+(p_authorid IN NUMBER)
+RETURN NVARCHAR2
+IS
+  lv_author NVARCHAR2(50);
+BEGIN
+  SELECT authorname INTO lv_author
+  FROM project_author
+  WHERE authorid = p_authorid;
+  RETURN lv_author;
+END;
+
+CREATE OR REPLACE FUNCTION ownerformat
+(p_userid IN NUMBER)
+RETURN NVARCHAR2
+IS
+  lv_user NVARCHAR2(50);
+BEGIN
+  SELECT fname || ' ' || lname INTO lv_user
+  FROM project_user
+  WHERE userid = p_userid;
+  RETURN lv_user;
+END;
+
+CREATE OR REPLACE FUNCTION genreformat
+(p_genreid IN NUMBER)
+RETURN NVARCHAR2
+IS
+  lv_genre NVARCHAR2(50);
+BEGIN
+  SELECT genrename INTO lv_genre
+  FROM project_genre
+  WHERE genreid = p_genreid;
+  RETURN lv_genre;
+END;
+
 CREATE OR REPLACE PROCEDURE common_book_info
-(p_search IN NVARCHAR2, v_refcur OUT sys_refcursor)
+(p_search IN VARCHAR, v_refcur OUT sys_refcursor)
 AS
 BEGIN
 OPEN v_refcur FOR
 SELECT 
+  project_books.bookID "#",
   project_books.title "Title", 
-  project_friend.friendname "Friend Name",
+  friendformat(project_books.friendid) "Friend Name",
   project_author.authorname "Author",
   project_genre.genrename "Genre"
   from project_books 
-  left outer join project_friend on project_books.friendid = project_friend.friendid
   join project_author on project_books.authorid = project_author.authorid
   join project_genre on project_books.genreid = project_genre.genreid
   where lower(project_books.title) like '%'||p_search||'%'
-  or lower(project_friend.friendname) like '%'||p_search||'%'
   or lower(project_author.authorname) like '%'||p_search||'%'
   or lower(project_genre.genrename) like '%'||p_search||'%';
 END;
-
-
+  
+CREATE OR REPLACE PROCEDURE book_info
+(p_id IN NUMBER, v_refcur OUT sys_refcursor)
+AS
+BEGIN
+OPEN v_refcur FOR
+SELECT 
+  title "Book Title",
+  isbn "ISBN",
+  pagecount "Number of Pages",
+  ownerformat(userid) "Owned by",
+  friendformat(friendid) "Borrowed by",
+  authorformat(authorid) "Authored by",
+  genreformat(genreid) "Genre"
+  from project_books 
+  where bookID = p_id;
+END;

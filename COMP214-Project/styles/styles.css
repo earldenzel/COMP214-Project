@@ -1,0 +1,51 @@
+﻿body {
+    width: 980px;
+    height: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: sans-serif;
+    position: relative;
+}
+#header{
+    height: 50px;
+    width: 980px;
+}
+#sidebar{
+    position: absolute;
+    top: 70px;
+    left: 0px;
+}
+#content{
+    margin-left: 130px;
+    padding-bottom: 200px;
+    height: 100%;
+    min-height: 400px;
+}
+#footer p{
+    font-size: x-small;
+    font-weight: bold;
+}
+.book{
+    background-color: lightgray;
+    height:230px;
+}
+.book div{
+    float: left;
+    margin:5px;
+    padding:5px;
+}
+#footer{
+    margin-left: 130px;
+    margin-top: -200px;
+    height: 200px;
+}
+h2{
+    height: 50px;
+    width: 100%;
+}
+.title{
+    font-size: large;
+}
+.author{
+    font-style: italic;
+}
