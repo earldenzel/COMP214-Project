@@ -21,7 +21,7 @@ namespace COMP214_Project
 
         protected void CustomValidator2_ServerValidate(object source, ServerValidateEventArgs args)
         {
-            args.IsValid = !(bookGenre.SelectedValue == "0" && newGenre.Text == "");
+            args.IsValid = !(bookGenre.SelectedIndex == 0 && newGenre.Text == "");
         }
 
         protected void bookSave_Click(object sender, EventArgs e)
@@ -31,22 +31,7 @@ namespace COMP214_Project
 
                 AddNewBook();
                 Response.Redirect("Success.aspx");
-                //if (newGenre.Text != "")
-                //{
-                //    if (CheckNewGenre() == -1)
-                //    {
-                //        AddNewGenre();
-                //        newlyCreatedGenre = CheckNewGenre();
-                //    }
-                //    //else
-                //    //{
-                //    //    bookGenre.SelectedValue = CheckNewGenre().ToString();
-                //    //}
-                //}
-                ////AddNewBook();
-                ////Response.Redirect("Success.aspx");
             }
-
         }
         
         private void AddNewBook()
@@ -66,7 +51,11 @@ namespace COMP214_Project
             OracleParameter param4 = comm.Parameters.Add("p_userid", OracleDbType.Int32, ParameterDirection.Input);
             param4.Value = Convert.ToInt32(DropDownList1.SelectedValue);
             OracleParameter param5 = comm.Parameters.Add("p_friendname", OracleDbType.NVarchar2, ParameterDirection.Input);
-            if (DropDownList2.SelectedIndex == 0)
+            if (DropDownList2.SelectedIndex == 0 && friendLent.Text == "")
+            {
+                param5.Value = DBNull.Value;
+            }
+            else if (DropDownList2.SelectedIndex == 0)
             {
                 param5.Value = friendLent.Text;
             }
@@ -79,6 +68,10 @@ namespace COMP214_Project
             OracleParameter param7 = comm.Parameters.Add("p_genrename", OracleDbType.NVarchar2, ParameterDirection.Input);
             if (bookGenre.SelectedIndex == 0)
             {
+                if (newGenre.Text == "")
+                {
+                    param7.Value = "None";
+                }
                 param7.Value = newGenre.Text;
             }
             else
@@ -87,7 +80,6 @@ namespace COMP214_Project
             }
             OracleParameter param8 = comm.Parameters.Add("p_comments", OracleDbType.NVarchar2, ParameterDirection.Input);
             param8.Value = bookNotes.Text;
-            //string message = param1.Value + param2.Value + param3.Value + param4.Value 
             
             try
             {

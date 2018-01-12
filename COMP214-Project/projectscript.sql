@@ -22,12 +22,12 @@ DROP TABLE project_address;
 
 CREATE TABLE project_address (
 	addressID	NUMBER(5),
-	unit		VARCHAR(10),
-	street		VARCHAR(30),
-	city		VARCHAR(30),
+	unit		NVARCHAR2(10),
+	street		NVARCHAR2(30),
+	city		NVARCHAR2(30),
 	province	CHAR(2),
-	postalcode	VARCHAR(6),
-	country		VARCHAR(20),
+	postalcode	NVARCHAR2(6),
+	country		NVARCHAR2(20),
 	CONSTRAINT addr_id_pk PRIMARY KEY (addressID)
 );
 INSERT INTO project_address
@@ -41,11 +41,11 @@ INSERT INTO project_address
 
 CREATE TABLE project_user (
 	userID		NUMBER(5),
-	username	VARCHAR(15) NOT NULL,
-	passwd  	VARCHAR(15),
-	fname		VARCHAR(40) NOT NULL,
-	lname		VARCHAR(40),
-	email		VARCHAR(40),
+	username	NVARCHAR2(15) NOT NULL,
+	passwd  	NVARCHAR2(15),
+	fname		NVARCHAR2(40) NOT NULL,
+	lname		NVARCHAR2(40),
+	email		NVARCHAR2(40),
 	addressID	NUMBER(5),
 	CONSTRAINT user_id_pk PRIMARY KEY (userID),
 	CONSTRAINT user_id_addr_fk FOREIGN KEY (addressID) REFERENCES project_address (addressID)
@@ -62,7 +62,7 @@ INSERT INTO project_user
   
 CREATE TABLE project_genre (
 	genreID		NUMBER(5),
-	genrename	VARCHAR(20),
+	genrename	NVARCHAR2(20),
 	CONSTRAINT gnre_id_pk PRIMARY KEY (genreID)
 );
 INSERT INTO project_genre 
@@ -76,7 +76,7 @@ INSERT INTO project_genre
 
 CREATE TABLE project_author (
 	authorID	NUMBER(5),
-	authorname	VARCHAR(50),
+	authorname	NVARCHAR2(50),
 	CONSTRAINT auth_id_pk PRIMARY KEY (authorID)
 );
 
@@ -88,10 +88,12 @@ INSERT INTO project_author
 	VALUES (3, 'George R.R. Martin');
 INSERT INTO project_author
 	VALUES (4, 'J.R.R. Tolkien');
+INSERT INTO project_author
+	VALUES (5, 'Bill Nye');
 
 CREATE TABLE project_friend (
 	friendID	NUMBER(5),
-	friendname	VARCHAR(40),
+	friendname	NVARCHAR2(40),
 	userID		NUMBER(5),
 	CONSTRAINT frnd_id_pk PRIMARY KEY (friendID),
 	CONSTRAINT frnd_id_user_fk FOREIGN KEY (userID) REFERENCES project_user (userID)
@@ -106,14 +108,14 @@ INSERT INTO project_friend
     
 CREATE TABLE project_books (
   bookID  NUMBER(6),
-	isbn		VARCHAR(20),
-	title		VARCHAR(50) NOT NULL,
+	isbn		NVARCHAR2(20),
+	title		NVARCHAR2(50) NOT NULL,
 	pagecount	NUMBER(4),
 	userID		NUMBER(5),
 	friendID	NUMBER(5),
 	authorID	NUMBER(5) NOT NULL,
 	genreID		NUMBER(5) NOT NULL,
-	comments	VARCHAR(140),
+	comments	NVARCHAR2(140),
 	CONSTRAINT book_id_pk PRIMARY KEY (bookID),
 	CONSTRAINT book_id_user_fk FOREIGN KEY (userID) REFERENCES project_user (userID),
 	CONSTRAINT book_id_frnd_fk FOREIGN KEY (friendID) REFERENCES project_friend (friendID),
@@ -128,11 +130,13 @@ INSERT INTO project_books
 INSERT INTO project_books
 	VALUES (3,'9788496422612', 'A Game of Thrones', 694, 1, 2, 3, 3, 'great read');
 INSERT INTO project_books
-	VALUES (4,'9781850894148', 'The Lord of the Rings: The Fellowship of the Ring', 423, 1, 2, 4, 3, 'great read');
+	VALUES (4,'9781850894148', 'The Lord of the Rings: The Fellowship of the Ring', 423, 2, NULL, 5, 2, 'great read');
+INSERT INTO project_books
+	VALUES (5,'9781427252104', 'Undeniable: Evolution and the Science of Creation', 423, 1, 2, 4, 3, 'great read');
 
 CREATE TABLE project_logs(
   logID NUMBER(6),
-  message VARCHAR(140),
+  message NVARCHAR2(140),
   userID NUMBER(5),
   time_done TIMESTAMP,
 	CONSTRAINT logs_id_user_fk FOREIGN KEY (userID) REFERENCES project_user (userID)
@@ -151,7 +155,7 @@ CREATE OR REPLACE TRIGGER log_deletes
 AFTER DELETE ON PROJECT_BOOKS 
 FOR EACH ROW 
 DECLARE
-  lv_message VARCHAR(140);
+  lv_message NVARCHAR2(140);
 BEGIN
   lv_message := 'Book ' || :old.title || ' was deleted';
   INSERT INTO project_logs (logID, message, userID, time_done) VALUES (log_seq.NEXTVAL, lv_message, :old.userid, SYSDATE);
@@ -161,7 +165,7 @@ CREATE OR REPLACE TRIGGER log_creates
 AFTER INSERT ON PROJECT_BOOKS 
 FOR EACH ROW 
 DECLARE
-  lv_message VARCHAR(140);
+  lv_message NVARCHAR2(140);
 BEGIN
   lv_message := 'Book ' || :new.title || ' was included';
   INSERT INTO project_logs (logID, message, userID, time_done) VALUES (log_seq.NEXTVAL, lv_message, :new.userid, SYSDATE);
@@ -331,14 +335,15 @@ END;
 /
 
 CREATE OR REPLACE PROCEDURE common_book_info
-(p_search IN VARCHAR, v_refcur OUT sys_refcursor)
+(p_search IN NVARCHAR2, v_refcur OUT sys_refcursor)
 AS
 BEGIN
 OPEN v_refcur FOR
 SELECT 
   project_books.bookID "#",
   project_books.title "Title", 
-  friendformat(project_books.friendid) "Friend Name",
+  ownerformat(project_books.userid) "Owned by",
+  friendformat(project_books.friendid) "Borrowed by",
   project_author.authorname "Author",
   project_genre.genrename "Genre"
   from project_books 
@@ -349,7 +354,7 @@ SELECT
   or lower(project_genre.genrename) like '%'||p_search||'%';
 END;
 /
- 
+
 CREATE OR REPLACE PROCEDURE book_info
 (p_id IN NUMBER, v_refcur OUT sys_refcursor)
 AS

@@ -3,5 +3,5 @@
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <h2>Deleted</h2>
-    <p>Book has been deleted. Genres may change</p>
+    <p>Book has been successfully deleted! </p>
 </asp:Content>
