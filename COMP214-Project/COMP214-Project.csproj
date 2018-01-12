@@ -73,6 +73,7 @@
     <Content Include="AddBooks.aspx" />
     <Content Include="BookDetails.aspx" />
     <Content Include="Default.aspx" />
+    <Content Include="Deleted.aspx" />
     <Content Include="Global.asax" />
     <Content Include="packages.config" />
     <Content Include="Site1.Master" />
@@ -86,6 +87,8 @@
   <ItemGroup>
     <Content Include="SearchBooks.aspx" />
     <Content Include="styles\styles.css" />
+    <Content Include="Success.aspx" />
+    <Content Include="ViewLogs.aspx" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -112,6 +115,13 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Deleted.aspx.cs">
+      <DependentUpon>Deleted.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Deleted.aspx.designer.cs">
+      <DependentUpon>Deleted.aspx</DependentUpon>
+    </Compile>
     <Compile Include="SearchBooks.aspx.cs">
       <DependentUpon>SearchBooks.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -126,6 +136,20 @@
     </Compile>
     <Compile Include="Site1.Master.designer.cs">
       <DependentUpon>Site1.Master</DependentUpon>
+    </Compile>
+    <Compile Include="Success.aspx.cs">
+      <DependentUpon>Success.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Success.aspx.designer.cs">
+      <DependentUpon>Success.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ViewLogs.aspx.cs">
+      <DependentUpon>ViewLogs.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ViewLogs.aspx.designer.cs">
+      <DependentUpon>ViewLogs.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <PropertyGroup>

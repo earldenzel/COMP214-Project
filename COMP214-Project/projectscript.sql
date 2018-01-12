@@ -1,16 +1,18 @@
 drop sequence user_seq;
 drop sequence author_seq;
-drop sequence address_seq;
 drop sequence books_seq;
 drop sequence genre_seq;
 drop sequence friend_seq;
+drop sequence log_seq;
+
 create sequence user_seq start with 100 increment by 1;
 create sequence author_seq start with 200 increment by 1;
-create sequence address_seq start with 300 increment by 1;
-create sequence books_seq start with 400 increment by 1;
-create sequence genre_seq start with 500 increment by 1;
-create sequence friend_seq start with 600 increment by 1;
+create sequence books_seq start with 300 increment by 1;
+create sequence genre_seq start with 400 increment by 1;
+create sequence friend_seq start with 500 increment by 1;
+create sequence log_seq start with 600 increment by 1;
 
+DROP TABLE project_logs;
 DROP TABLE project_books;
 DROP TABLE project_genre;
 DROP TABLE project_friend;
@@ -28,7 +30,8 @@ CREATE TABLE project_address (
 	country		VARCHAR(20),
 	CONSTRAINT addr_id_pk PRIMARY KEY (addressID)
 );
-
+INSERT INTO project_address
+	VALUES (0, NULL, '135 Purvis Crescent', 'Scarborough', 'ON', 'M1B1H8', 'CANADA');
 INSERT INTO project_address
 	VALUES (1, NULL, '137 Purvis Crescent', 'Scarborough', 'ON', 'M1B1H8', 'CANADA');
 INSERT INTO project_address
@@ -49,6 +52,8 @@ CREATE TABLE project_user (
 );
 
 INSERT INTO project_user
+	VALUES (0, 'username','password','All','Perez','earldenzel@gmail.com', 0);
+INSERT INTO project_user
 	VALUES (1, 'earlperez','password','Earl Denzel','Perez','earldenzel@gmail.com', 1);
 INSERT INTO project_user
 	VALUES (2, 'siddharthpandya','password','Siddharth','Pandya', NULL, 2);
@@ -60,7 +65,8 @@ CREATE TABLE project_genre (
 	genrename	VARCHAR(20),
 	CONSTRAINT gnre_id_pk PRIMARY KEY (genreID)
 );
-
+INSERT INTO project_genre 
+	VALUES (0, '');
 INSERT INTO project_genre 
 	VALUES (1, 'Sci-Fi');
 INSERT INTO project_genre 
@@ -92,6 +98,8 @@ CREATE TABLE project_friend (
 );
 
 INSERT INTO project_friend
+	VALUES (0, '', 0);
+INSERT INTO project_friend
 	VALUES (1, 'TJ', 1);
 INSERT INTO project_friend
 	VALUES (2, 'Mr. Friendo', 1);
@@ -122,6 +130,45 @@ INSERT INTO project_books
 INSERT INTO project_books
 	VALUES (4,'9781850894148', 'The Lord of the Rings: The Fellowship of the Ring', 423, 1, 2, 4, 3, 'great read');
 
+CREATE TABLE project_logs(
+  logID NUMBER(6),
+  message VARCHAR(140),
+  userID NUMBER(5),
+  time_done TIMESTAMP,
+	CONSTRAINT logs_id_user_fk FOREIGN KEY (userID) REFERENCES project_user (userID)
+);
+
+--indexes
+create index projectbook_title_index on project_books(title);
+create index projectfriend_friendname_index on project_friend(friendname);
+create index projectauthor_authorname_index on project_author(authorname);
+create index projectgenre_genrename_index on project_genre(genrename);
+
+commit;
+
+--triggers
+CREATE OR REPLACE TRIGGER log_deletes
+AFTER DELETE ON PROJECT_BOOKS 
+FOR EACH ROW 
+DECLARE
+  lv_message VARCHAR(140);
+BEGIN
+  lv_message := 'Book ' || :old.title || ' was deleted';
+  INSERT INTO project_logs (logID, message, userID, time_done) VALUES (log_seq.NEXTVAL, lv_message, :old.userid, SYSDATE);
+END;
+/
+CREATE OR REPLACE TRIGGER log_creates
+AFTER INSERT ON PROJECT_BOOKS 
+FOR EACH ROW 
+DECLARE
+  lv_message VARCHAR(140);
+BEGIN
+  lv_message := 'Book ' || :new.title || ' was included';
+  INSERT INTO project_logs (logID, message, userID, time_done) VALUES (log_seq.NEXTVAL, lv_message, :new.userid, SYSDATE);
+END;
+/
+
+--functions
 CREATE OR REPLACE FUNCTION friendformat
 (p_friendid IN NUMBER)
 RETURN NVARCHAR2
@@ -139,6 +186,22 @@ BEGIN
     END;
   END IF;
 END;
+/
+
+CREATE OR REPLACE FUNCTION chk_friend
+  (p_chkfriend IN NVARCHAR2)
+  RETURN NUMBER
+  IS
+    lv_friendid NUMBER(4);
+BEGIN
+  SELECT friendid INTO lv_friendid
+  FROM project_friend
+  WHERE lower(friendname) = lower(p_chkfriend);
+  RETURN lv_friendid;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+  RETURN -1;
+END;
+/
 
 CREATE OR REPLACE FUNCTION authorformat
 (p_authorid IN NUMBER)
@@ -151,6 +214,7 @@ BEGIN
   WHERE authorid = p_authorid;
   RETURN lv_author;
 END;
+/
 
 CREATE OR REPLACE FUNCTION ownerformat
 (p_userid IN NUMBER)
@@ -163,6 +227,7 @@ BEGIN
   WHERE userid = p_userid;
   RETURN lv_user;
 END;
+/
 
 CREATE OR REPLACE FUNCTION genreformat
 (p_genreid IN NUMBER)
@@ -175,6 +240,95 @@ BEGIN
   WHERE genreid = p_genreid;
   RETURN lv_genre;
 END;
+/
+
+CREATE OR REPLACE FUNCTION chk_genre
+  (p_chkgenre IN NVARCHAR2)
+  RETURN NUMBER
+  IS
+    lv_genreid NUMBER(4);
+BEGIN
+  SELECT genreid INTO lv_genreid
+  FROM project_genre
+  WHERE lower(genrename) = lower(p_chkgenre);
+  RETURN lv_genreid;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+  RETURN -1;
+END;
+/
+
+
+CREATE OR REPLACE FUNCTION chk_author
+  (p_chkauthor IN NVARCHAR2)
+  RETURN NUMBER
+  IS
+    lv_authorid NUMBER(4);
+BEGIN
+  SELECT authorid INTO lv_authorid
+  FROM project_author
+  WHERE lower(authorname) = lower(p_chkauthor);
+  RETURN lv_authorid;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+  RETURN -1;
+END;
+/
+
+--procedures
+CREATE OR REPLACE PROCEDURE add_genre
+  (p_newgenre IN NVARCHAR2,
+  p_newgenreid OUT NUMBER)
+  AS
+BEGIN
+  INSERT INTO project_genre
+  VALUES(genre_seq.NEXTVAL, p_newgenre);
+  p_newgenreid := genre_seq.CURRVAL;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE add_friend
+  (p_newfriend IN NVARCHAR2,
+  p_newfriendid OUT NUMBER)
+  AS
+BEGIN
+  INSERT INTO project_friend
+  VALUES(friend_seq.NEXTVAL, p_newfriend, 1);
+  p_newfriendid := friend_seq.CURRVAL;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE add_author
+  (p_newauthor IN NVARCHAR2,
+  p_newauthorid OUT NUMBER)
+  AS
+BEGIN
+  INSERT INTO project_author
+  VALUES(author_seq.NEXTVAL, p_newauthor);
+  p_newauthorid := author_seq.CURRVAL;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE log_info
+(p_search IN NUMBER, v_refcur OUT sys_refcursor)
+AS
+BEGIN
+IF p_search = 0 THEN 
+  OPEN v_refcur FOR
+  SELECT
+    time_done "Time Done",
+    message "Message"
+  FROM project_logs
+  ORDER BY time_done DESC;
+ELSE
+  OPEN v_refcur FOR
+  SELECT
+    time_done "Time Done",
+    message "Message"
+  FROM project_logs
+  WHERE userid = p_search
+  ORDER BY time_done DESC;
+  END IF;
+END;
+/
 
 CREATE OR REPLACE PROCEDURE common_book_info
 (p_search IN VARCHAR, v_refcur OUT sys_refcursor)
@@ -194,7 +348,8 @@ SELECT
   or lower(project_author.authorname) like '%'||p_search||'%'
   or lower(project_genre.genrename) like '%'||p_search||'%';
 END;
-  
+/
+ 
 CREATE OR REPLACE PROCEDURE book_info
 (p_id IN NUMBER, v_refcur OUT sys_refcursor)
 AS
@@ -211,3 +366,34 @@ SELECT
   from project_books 
   where bookID = p_id;
 END;
+/
+
+CREATE OR REPLACE PROCEDURE add_new_book
+  (p_isbn IN NVARCHAR2,
+  p_title IN NVARCHAR2,
+  p_pagecount IN NUMBER,
+  p_userid IN NUMBER,
+  p_friendname IN NVARCHAR2,
+  p_authorname IN NVARCHAR2,
+  p_genrename IN NVARCHAR2,
+  p_comments IN NVARCHAR2)
+AS
+  lv_friendid NUMBER;
+  lv_authorid NUMBER;
+  lv_genreid NUMBER;
+BEGIN  
+  lv_friendid := chk_friend(p_friendname);
+  if(lv_friendid = -1) then add_friend(p_friendname,  lv_friendid);
+  end if;
+
+  lv_genreid := chk_genre(p_genrename);
+  if (lv_genreid = -1) then add_genre(p_genrename, lv_genreid);
+  end if;  
+  
+  lv_authorid := chk_genre(p_authorname);
+  if (lv_authorid = -1) then add_author(p_authorname, lv_authorid);
+  end if;
+  INSERT INTO PROJECT_BOOKS (BOOKID, ISBN, TITLE, PAGECOUNT, USERID, FRIENDID, AUTHORID, GENREID, COMMENTS)
+  VALUES (books_seq.NEXTVAL, p_isbn, p_title, p_pagecount, p_userid, lv_friendid, lv_authorid, lv_genreid, p_comments);
+END;
+/

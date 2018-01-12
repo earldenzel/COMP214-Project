@@ -20,4 +20,5 @@
 
         <RowStyle BackColor="#EFF3FB"></RowStyle>
     </asp:DetailsView>
+    <asp:Button ID="Button1" runat="server" Text="Delete" OnClick="Button1_Click" />
 </asp:Content>

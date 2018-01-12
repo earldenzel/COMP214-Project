@@ -24,6 +24,7 @@
                     <asp:MenuItem NavigateUrl="~/Default.aspx" Text="Home" Value="Home"></asp:MenuItem>
                     <asp:MenuItem NavigateUrl="~/AddBooks.aspx" Text="Add Books" Value="Add Books"></asp:MenuItem>
                     <asp:MenuItem NavigateUrl="~/SearchBooks.aspx" Text="Search Books" Value="Search Books"></asp:MenuItem>
+                    <asp:MenuItem NavigateUrl="~/ViewLogs.aspx" Text="View Logs" Value="View Logs"></asp:MenuItem>
                 </Items>
                 <StaticHoverStyle BackColor="#666666" ForeColor="White" />
                 <StaticMenuItemStyle HorizontalPadding="5px" VerticalPadding="2px" />

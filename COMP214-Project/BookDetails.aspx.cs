@@ -16,7 +16,6 @@ namespace COMP214_Project
         protected void Page_Load(object sender, EventArgs e)
         {
             ShowBookDetails(Request.QueryString["id"]);
-
         }
 
         private void ShowBookDetails(string id)
@@ -57,6 +56,33 @@ namespace COMP214_Project
             DetailsView1.DataSource = table;
             DetailsView1.DataBind();
 
-        }        
+        }
+
+        protected void Button1_Click(object sender, EventArgs e)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["oracle1"].ConnectionString;
+            OracleConnection conn = new OracleConnection();
+            conn.ConnectionString = connectionString;
+            OracleCommand comm = conn.CreateCommand();
+            comm.CommandType = CommandType.Text;
+            comm.CommandText = "DELETE FROM PROJECT_BOOKS WHERE BOOKID=" + Request.QueryString["id"];
+
+            try
+            {
+                comm.Connection.Open();
+                comm.ExecuteNonQuery();
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                comm.Connection.Close();
+            }
+
+            Response.Redirect("Deleted.aspx");
+
+        }
     }
 }
